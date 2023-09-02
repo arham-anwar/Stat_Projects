@@ -1,0 +1,295 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "d2855a53",
+   "metadata": {},
+   "source": [
+    "## LP with pulp"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "22559aa0",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Collecting pulp\n",
+      "  Downloading PuLP-2.7.0-py3-none-any.whl (14.3 MB)\n",
+      "\u001b[2K     \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m14.3/14.3 MB\u001b[0m \u001b[31m11.7 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m00:01\u001b[0m00:01\u001b[0m\n",
+      "\u001b[?25hInstalling collected packages: pulp\n",
+      "Successfully installed pulp-2.7.0\n",
+      "Note: you may need to restart the kernel to use updated packages.\n"
+     ]
+    }
+   ],
+   "source": [
+    "pip install pulp"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "42a95aae",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from pulp import *"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "4c2b31e5",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#defining variables\n",
+    "xw = LpVariable(\"xw\",0)\n",
+    "xb = LpVariable(\"xb\",0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "443ead50",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "prob = LpProblem(\"A2_Liquor_Optimization\", LpMaximize)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "362ec1ea",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "prob += 3000*xw + 2000*xb\n",
+    "prob += xb - xw <= 1\n",
+    "prob += 2*xw + xb <= 8\n",
+    "prob += xw + 2*xb <=6\n",
+    "prob += xb <= 2\n",
+    "prob += xw >= 0\n",
+    "prob += xb >= 0"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "a8016182",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Welcome to the CBC MILP Solver \n",
+      "Version: 2.10.3 \n",
+      "Build Date: Dec 15 2019 \n",
+      "\n",
+      "command line - /Users/arham/anaconda3/lib/python3.10/site-packages/pulp/solverdir/cbc/osx/64/cbc /var/folders/2t/c7s0z0zs4698zw0k9pj4f2r80000gn/T/e6c2b52025824ee1a932a3e783d8b3d6-pulp.mps max timeMode elapsed branch printingOptions all solution /var/folders/2t/c7s0z0zs4698zw0k9pj4f2r80000gn/T/e6c2b52025824ee1a932a3e783d8b3d6-pulp.sol (default strategy 1)\n",
+      "At line 2 NAME          MODEL\n",
+      "At line 3 ROWS\n",
+      "At line 11 COLUMNS\n",
+      "At line 23 RHS\n",
+      "At line 30 BOUNDS\n",
+      "At line 31 ENDATA\n",
+      "Problem MODEL has 6 rows, 2 columns and 9 elements\n",
+      "Coin0008I MODEL read with 0 errors\n",
+      "Option for timeMode changed from cpu to elapsed\n",
+      "Presolve 3 (-3) rows, 2 (0) columns and 6 (-3) elements\n",
+      "0  Obj -0 Dual inf 5000 (2)\n",
+      "2  Obj 12666.667\n",
+      "Optimal - objective value 12666.667\n",
+      "After Postsolve, objective 12666.667, infeasibilities - dual 0 (0), primal 0 (0)\n",
+      "Optimal objective 12666.66667 - 2 iterations time 0.002, Presolve 0.00\n",
+      "Option for printingOptions changed from normal to all\n",
+      "Total time (CPU seconds):       0.00   (Wallclock seconds):       0.00\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "status = prob.solve()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "30ae46ea",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "value of Xw is: 3.3333333\n",
+      "value of Xb is: 1.3333333\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(f\"value of Xw is: {value(xw)}\")\n",
+    "print(f\"value of Xb is: {value(xb)}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "901d6a5c",
+   "metadata": {},
+   "source": [
+    "## Non Linear Programming with scipi"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "3d03071c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from scipy.optimize import minimize_scalar"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "99048b99",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "417"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Creating function\n",
+    "fx = lambda x:(5*(x**2)-9*x +7)  \n",
+    "fx(10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "e14608de",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       " message: \n",
+       "          Optimization terminated successfully;\n",
+       "          The returned value satisfies the termination criteria\n",
+       "          (using xtol = 1.48e-08 )\n",
+       " success: True\n",
+       "     fun: 2.95\n",
+       "       x: 0.9000000133300001\n",
+       "     nit: 5\n",
+       "    nfev: 8"
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "model = minimize_scalar(fun=fx)\n",
+    "model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "ef159367",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[4, 5, 6, 1, 2, 3]\n"
+     ]
+    }
+   ],
+   "source": [
+    "list_a = [4, 5, 6] \n",
+    "list_b = [1, 2, 3] \n",
+    "list_a_b = list_a + list_b \n",
+    "print(list_a_b)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "7f605f51",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "9\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "[4, 5, 6, 4, 5, 6, 4, 5, 6]"
+      ]
+     },
+     "execution_count": 21,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "list_1 = [4, 5, 6] \n",
+    "list_1_rep = list_1 * 3 \n",
+    "print(len(list_1_rep))\n",
+    "list_1_rep"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "158398cd",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
