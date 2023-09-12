@@ -1,0 +1,217 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "id": "4c70a75f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#import libraries\n",
+    "\n",
+    "import gurobipy as gb\n",
+    "from gurobipy import *"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "77e7c703",
+   "metadata": {},
+   "source": [
+    "## EXC 1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "07fdfde2",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "s = { 'SP':400 , 'HK':900, 'TP':200, 'SE': 500}\n",
+    "d = { 'Lon':500 , 'Paris':700, 'NYC': 800}\n",
+    "\n",
+    "trans_var_cost = [[3800, 4000, 6000], [3300, 3500, 5950], [2800, 4000, 6200], [2000, 4300 , 5000]]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "4a8da37a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "prob = gb.Model(\"Transportation Problem\")\n",
+    "\n",
+    "\n",
+    "# add variables\n",
+    "X = prob.addVars(s,d, vtype = GRB.CONTINUOUS, \n",
+    "                 lb = 0, \n",
+    "                 name = ['X'+i+'_'+j for i in s.keys() for j in d.keys()])\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "7a0b8dab",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{('SP', 'Lon'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('SP', 'Paris'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('SP', 'NYC'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('HK', 'Lon'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('HK', 'Paris'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('HK', 'NYC'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('TP', 'Lon'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('TP', 'Paris'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('TP', 'NYC'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('SE', 'Lon'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('SE', 'Paris'): <gurobi.Var *Awaiting Model Update*>,\n",
+       " ('SE', 'NYC'): <gurobi.Var *Awaiting Model Update*>}"
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "id": "c55bd7e1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# add objective\n",
+    "prob.setObjective(\n",
+    "    (sum(trans_var_cost[i][j]*X[list(s.keys())[i],list(d.keys())[j]] \n",
+    "         for i in range(len(s.keys())) \n",
+    "         for j in range(len(d.keys())))), \n",
+    "     GRB.MINIMIZE)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "id": "83102a8a",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'SP': <gurobi.Constr *Awaiting Model Update*>,\n",
+       " 'HK': <gurobi.Constr *Awaiting Model Update*>,\n",
+       " 'TP': <gurobi.Constr *Awaiting Model Update*>,\n",
+       " 'SE': <gurobi.Constr *Awaiting Model Update*>}"
+      ]
+     },
+     "execution_count": 58,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# add demand constr\n",
+    "prob.addConstrs(sum(X[i, j] for i in s.keys()) >= d[j] for j in d.keys())\n",
+    "\n",
+    "# add supply constr\n",
+    "prob.addConstrs(sum(X[i, j] for j in d.keys()) <= s[i] for i in s.keys())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 59,
+   "id": "3ca25d76",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (mac64[arm])\n",
+      "\n",
+      "CPU model: Apple M2\n",
+      "Thread count: 8 physical cores, 8 logical processors, using up to 8 threads\n",
+      "\n",
+      "Optimize a model with 10 rows, 12 columns and 36 nonzeros\n",
+      "Coefficient statistics:\n",
+      "  Matrix range     [1e+00, 1e+00]\n",
+      "  Objective range  [2e+03, 6e+03]\n",
+      "  Bounds range     [0e+00, 0e+00]\n",
+      "  RHS range        [2e+02, 9e+02]\n",
+      "Iteration    Objective       Primal Inf.    Dual Inf.      Time\n",
+      "       0    7.4500000e+06   8.000000e+02   0.000000e+00      0s\n",
+      "       3    8.2000000e+06   0.000000e+00   0.000000e+00      0s\n",
+      "\n",
+      "Solved in 3 iterations and 0.00 seconds (0.00 work units)\n",
+      "Optimal objective  8.200000000e+06\n"
+     ]
+    }
+   ],
+   "source": [
+    "prob.optimize()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "id": "8a5074d3",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "XSP_NYC = 400.0\n",
+      "XHK_Paris = 700.0\n",
+      "XHK_NYC = 200.0\n",
+      "XTP_Lon = 200.0\n",
+      "XSE_Lon = 300.0\n",
+      "XSE_NYC = 200.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "for v in prob.getVars():\n",
+    "    if v.x > 0:\n",
+    "        print(v.varName, \"=\", v.x)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "323689da",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
